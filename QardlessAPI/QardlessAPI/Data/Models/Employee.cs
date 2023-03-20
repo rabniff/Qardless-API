@@ -12,28 +12,6 @@ namespace QardlessAPI.Data.Models
         public string Name { get; set; }
 
         [Required]
-        public string Email { get; set; }
-
-        [Required]
-        public bool EmailVerified { get; set; }
-
-        [Required]
-        public string PasswordHash { get; set; }
-
-        public string? ContactNumber { get; set; }
-
-        public bool ContactNumberVerified { get; set; }
-
-        // NOTE: Could be an Enum
-        [Required]
-        public int PrivilegeLevel { get; set; }
-
-        [Required]
-        public DateTime CreatedDate { get; set; }
-
-        public DateTime LastLoginDate { get; set; }
-
-        [Required]
         [ForeignKey("BusinessId")]
         public Business Business { get; set; }
         public Guid BusinessId { get; set; }

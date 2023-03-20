@@ -1,6 +1,5 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
-using QardlessAPI.Data.Dtos.Admin;
 using QardlessAPI.Data.Dtos.Authentication;
 using QardlessAPI.Data.Dtos.Business;
 using QardlessAPI.Data.Dtos.Certificate;
@@ -29,88 +28,6 @@ namespace QardlessAPI.Data
         {
             return _context.SaveChanges() >= 0;
         }
-
-        #region Admin
-        public async Task<IEnumerable<Admin>> ListAllAdmins()
-        {
-            return await _context.Admins.ToListAsync();
-        }
-
-        public async Task<Admin?> GetAdminById(Guid id)
-        {
-            return await _context.Admins.FirstOrDefaultAsync(a => a.Id == id);
-        }
-
-        //for login
-        public async Task<Admin?> GetAdminByEmail(LoginDto adminLoginDto)
-        {
-            return await _context.Admins.FirstOrDefaultAsync(
-                e => e.Email == adminLoginDto.Email);
-        }
-
-        public async Task<Admin?> UpdateAdminDetails(Guid id, AdminUpdateDto adminForUpdate)
-        {
-            Admin? admin = await _context.Admins.FirstOrDefaultAsync(e => e.Id == id);
-
-            admin.Name = adminForUpdate.Name;
-            admin.Email = adminForUpdate.Email;
-            admin.ContactNumber = adminForUpdate.ContactNumber;
-
-            _context.SaveChanges();
-            _context.Admins.Add(admin);
-
-            return await _context.Admins.FirstOrDefaultAsync(e => e.Id == id);
-        }
-
-        public AdminPartialDto AddNewAdmin(AdminCreateDto newAdmin)
-        {
-            if (newAdmin == null)
-                throw new ArgumentNullException(nameof(newAdmin));
-
-            Admin admin = new Admin
-            {
-                Id = new Guid(),
-                Name = newAdmin.Name,
-                Email = newAdmin.Email,
-                EmailVerified = false,
-                PasswordHash = HashPassword(newAdmin.Password),
-                ContactNumber = newAdmin.ContactNumber,
-                ContactNumberVerified = false,
-                CreatedDate = DateTime.Now,
-                LastLoginDate = DateTime.Now
-            };
-
-            _context.Admins.Add(admin);
-            _context.SaveChanges();
-
-            AdminPartialDto adminPartial = new AdminPartialDto
-            {
-                Id = admin.Id,
-                Name = admin.Name,
-                Email = admin.Email,
-                ContactNumber = admin.ContactNumber,
-                IsLoggedIn = false
-            };
-
-            return adminPartial;
-        }
-
-        // Password check for login
-        public bool CheckAdminPassword(Admin admin, LoginDto login)
-        {
-            if(admin.PasswordHash == HashPassword(login.Password))
-                return true;
-            return false;
-        }
-
-        public void DeleteAdmin(Admin? admin)
-        {
-            if (admin == null)
-                throw new ArgumentNullException(nameof(admin));
-
-            _context.Admins.Remove(admin);
-        }
-        #endregion
 
         #region Business
         public async Task<IEnumerable<Business>> ListAllBusinesses()
@@ -299,21 +216,13 @@ namespace QardlessAPI.Data
             return await _context.Employees.FirstOrDefaultAsync(e => e.Id == id);
         }
 
-        //For Login Controller
-        public async Task<Employee?> GetEmployeeByEmail(LoginDto empLoginDto)
-        {
-            return await _context.Employees.FirstOrDefaultAsync(e => e.Email == empLoginDto.Email);
-        }
+
 
         public async Task<Employee?> UpdateEmployee(Guid id, EmployeeUpdateDto employeeUpdateDto)
         {
             Employee? emp = await _context.Employees.FirstOrDefaultAsync(e => e.Id == id);
 
             emp.Name = employeeUpdateDto.Name;
-            emp.Email = employeeUpdateDto.Email;
-            emp.PasswordHash = HashPassword(employeeUpdateDto.Password);
-            emp.ContactNumber = employeeUpdateDto.ContactNumber;
-            emp.PrivilegeLevel = employeeUpdateDto.PrivilegeLevel;
             emp.BusinessId = employeeUpdateDto.BusinessId;
 
             _context.SaveChanges();
@@ -331,13 +240,6 @@ namespace QardlessAPI.Data
             {
                 Id = new Guid(),
                 Name = newEmp.Name,
-                Email = newEmp.Email,
-                EmailVerified = false,
-                PasswordHash = HashPassword(newEmp.Password),
-                ContactNumber = newEmp.ContactNumber,
-                ContactNumberVerified = false,
-                CreatedDate = DateTime.Now,
-                PrivilegeLevel = newEmp.PrivilegeLevel,
                 BusinessId = newEmp.BusinessId
             };
             
@@ -348,21 +250,10 @@ namespace QardlessAPI.Data
             {
                 Id = emp.Id,
                 Name = emp.Name,
-                Email = emp.Email,
-                ContactNumber = emp.ContactNumber,
                 BusinessId = emp.BusinessId
             };
             
             return empPartialRead;
-        }
-
-        // Password check for login 
-        public bool CheckEmpPassword(Employee emp, LoginDto login)
-        {
-            if (emp.PasswordHash == HashPassword(login.Password))
-                return true;
-
-            return false;
         }
 
         public void DeleteEmployee(Employee? emp)
@@ -385,20 +276,11 @@ namespace QardlessAPI.Data
             return await _context.EndUsers.FirstOrDefaultAsync(e => e.Id == id);
         }
 
-        //For login controller
-        public async Task<EndUser?> GetEndUserByEmail(LoginDto endUserLoginDto)
-        {
-            return await _context.EndUsers.FirstOrDefaultAsync(
-                e => e.Email == endUserLoginDto.Email);
-        }
-
         public async Task<EndUser?> UpdateEndUserDetails(Guid id, EndUserUpdateDto endUserUpdateDto)
         {
             EndUser? endUser = await _context.EndUsers.FirstOrDefaultAsync(e => e.Id == id);
 
             endUser.Name = endUserUpdateDto.Name;
-            endUser.Email = endUserUpdateDto.Email;
-            endUser.ContactNumber = endUserUpdateDto.ContactNumber;
 
             _context.SaveChanges();
             _context.EndUsers.Add(endUser);
@@ -414,13 +296,7 @@ namespace QardlessAPI.Data
             EndUser endUser = new EndUser
             {
                 Id = new Guid(),
-                Name = endUserForCreation.Name,
-                Email = endUserForCreation.Email,
-                EmailVerified = false,
-                PasswordHash = HashPassword(endUserForCreation.Password),
-                ContactNumber = endUserForCreation.ContactNumber,
-                CreatedDate = DateTime.Now,
-                LastLoginDate = DateTime.Now
+                Name = endUserForCreation.Name
             };
 
             _context.EndUsers.Add(endUser);
@@ -430,22 +306,12 @@ namespace QardlessAPI.Data
             {
                 Id = endUser.Id,
                 Name = endUser.Name,
-                Email = endUser.Email,
-                ContactNumber = endUser.ContactNumber,
                 IsLoggedIn = false
             };
            
             return endUserReadPartialDto;
         }
 
-        // Password check for login 
-        public bool CheckEndUserPassword(EndUser endUser, LoginDto login)
-        {
-            if(endUser.PasswordHash == HashPassword(login.Password))
-                return true;
-
-            return false;
-        }
 
         public void DeleteEndUser(EndUser? endUser)
         {
@@ -453,62 +319,6 @@ namespace QardlessAPI.Data
                 throw new ArgumentNullException(nameof(endUser));
 
             _context.EndUsers.Remove(endUser);
-        }
-
-        #endregion
-
-        #region Login 
-
-        public EndUserReadPartialDto SendEndUserForProps(EndUser endUser)
-        {
-            EndUserReadPartialDto endUserForProps = new EndUserReadPartialDto
-            {
-                Id = endUser.Id,
-                Name = endUser.Name,
-                Email = endUser.Email,
-                ContactNumber = endUser.ContactNumber,
-                IsLoggedIn = true
-            };
-
-            endUser.LastLoginDate = DateTime.Now;
-            SaveChanges();
-
-            return endUserForProps;
-        }
-
-        public EmployeeReadPartialDto SendEmpForProps(Employee emp)
-        {
-            EmployeeReadPartialDto empForProps = new EmployeeReadPartialDto
-            {
-                Id = emp.Id,
-                Name = emp.Name,
-                Email = emp.Email,
-                ContactNumber = emp.ContactNumber,
-                BusinessId = emp.BusinessId,
-                IsLoggedIn = true
-            };
-
-            emp.LastLoginDate = DateTime.Now;
-            SaveChanges();
-
-            return empForProps;
-        }
-
-        public AdminPartialDto SendAdminForProps(Admin admin)
-        {
-            AdminPartialDto adminForProps = new AdminPartialDto
-            {
-                Id = admin.Id,
-                Name = admin.Name,
-                Email = admin.Email,
-                ContactNumber = admin.ContactNumber,
-                IsLoggedIn = true
-            };
-
-            admin.LastLoginDate = DateTime.Now;
-            SaveChanges();
-
-            return adminForProps;
         }
 
         #endregion

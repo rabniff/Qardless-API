@@ -1,9 +1,10 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using QardlessAPI.Data.Models;
 
 namespace QardlessAPI.Data
 {
-    public class ApplicationDbContext : DbContext
+    public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     {
         public ApplicationDbContext() : base()
         {
@@ -14,7 +15,6 @@ namespace QardlessAPI.Data
         {
         }
 
-        public DbSet<Admin> Admins { get; set; }
         public DbSet<Business> Businesses { get; set; }
         public DbSet<Certificate> Certificates { get; set; }
         public DbSet<Changelog> Changelogs { get; set; }
